@@ -239,16 +239,16 @@
 
 可以看出模型测速耗时64ms，具有较快的速度
 ### 5.2 对模型进行可视化测试
-- pth模型测试可视化结果：![pth文件测试结果可视化](data/test/fine_tuned/ap/output_pytorch.jpg)
+- pth模型测试可视化结果：![](output_pytorch.jpg)
 
-- onnxruntime模型测试可视化结果：![pth文件测试结果可视化](data/test/fine_tuned/ap/output_tensorrt.jpg)
+- onnxruntime模型测试可视化结果：![](output_onnxruntime.jpg)
 
 可见onnxruntime格式依然保持了较高的准确率，几乎没有精度损失。
 
 
 #### 实时检测，参考result.mp4
 
-#### 精度满足实时检测的需求，具有良好的跌倒检测效果。
+#### 精度满足实时检测的需求，具有良好行人跌倒检测效果。
 # 6 总结和评估
 
 本项目完成了目标检测调优与部署测试的整个流程，进行了功能测试和速度测试。测试结果显示，本项目模型达到了较高的精度，转换后的模型也达到了较快的推理速度（单张图片平均延迟为64毫秒）。
