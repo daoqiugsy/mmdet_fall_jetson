@@ -1,13 +1,13 @@
 # 行人跌倒检测及jetson的部署
 ## 0、项目介绍
 
-本项目选用轻量且高效的YOLOv7_tiny算法实现了对目标检测模型的微调，功能测试，以及在NVIDIA Jetson 平台上的部署和速度测试。实验表明：(1) 微调后的模型精度有明显提升，(2) [MMDeploy](https://github.com/open-mmlab/mmdeploy)转化后的tensorrt格式的目标检测模型几乎没有精度损失，且有较快的推理速度。
+本项目选用轻量且高效的YOLOv7_tiny算法实现了对目标检测模型的微调，功能测试，以及在NVIDIA Jetson 平台上的部署和速度测试。实验表明：(1) 微调后的模型精度有明显提升，(2) [MMDeploy](https://github.com/open-mmlab/mmdeploy)转化后的onnxruntime格式的目标检测模型几乎没有精度损失，且有较快的推理速度。
 
-- 项目任务详情： [点击](https://github.com/open-mmlab/OpenMMLabCamp/discussions/562)
-- Github 仓库链接： [点击](https://github.com/jiongjiongli/mmdet_jetson)
+- 项目任务详情： [点击](https://github.com/open-mmlab/OpenMMLabCamp/discussions/583)
+- Github 仓库链接： [点击](https://github.com/daoqiugsy/mmdet_fall_jetson)
 
 ## 1、数据集分析
-本项目收集1440张行人跌倒图像，并将数据集按训练集：验证集=8:2的比例进行划分
+本项目收集1440张行人跌倒图像，并将数据集按训练集：验证集=8:2的比例进行划分。 
 ### 1.1首先从Github下载mmyolo项目
     git clone https://github.com/open-mmlab/mmyolo.git
 
@@ -80,7 +80,7 @@
 
 ### 1.4查看验证集
     python tools/analysis_tools/dataset_analysis.py configs/yolov7/yolov7_tiny_fall.py --out-dir work_dirs/dataset_analysis_cat/train_datasetataset --val-dataset
-
+通过对训练集和验证集的查看，发现图像中大目标最多，小目标数量极少。
 ### 1.5优化anchor尺寸
 由于YOLOv7的anchor默认anchor尺寸是根据coco数据集得来的，本项目应根据本项目数据集计算anchor尺寸
 #### 1.5.1
@@ -103,11 +103,11 @@
 ![](5.png)
 
 ## 3、验证
-### 3.1用训练好的模型对验证集进行验证
+### 3.1 用训练好的模型对验证集进行验证
 
     python tools/test.py configs/yolov7/yolov7_tiny_fall.py work_dirs/yolov7_tiny_fall/best_coco_bbox_mAP_epoch_40.pth                 
-### 3.2nms参数的调整
-#### 3.2.0对yolov7_l_syncbn_fast_8x16b-300e_coco.py配置文件中nms进行修改
+### 3.2 nms参数的调整
+#### 3.2.1 对yolov7_l_syncbn_fast_8x16b-300e_coco.py配置文件中nms进行修改
     model_test_cfg = dict(
     # The config of multi-label for multi-class prediction.
     multi_label=True,
@@ -128,18 +128,18 @@
 当nms参数为0.5时，map0.5的指标最高，故调整nms的iou_threshold=0.50
 
 ## 4、导出模型
-### 4.1#首先下载mmdeploy
+### 4.1 首先下载mmdeploy
     git clone https://github.com/open-mmlab/mmdeploy.git
-### 4.2#进入mmdeploy-main文件
+### 4.2 进入mmdeploy-main文件
     cd mmyolo-main
-### 4.3#导出onnxruntime模型
+### 4.3 导出onnxruntime模型
     python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_onnxruntime_static.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_240.pth data/fall_7.jpg --dump-info#导出SDK
-### 4.4#导出tensorrt模型
+### 4.4 导出tensorrt模型
     python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_tensorrt-int8_static-640x640.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_240.pth data/fall_7.jpg --dump-info#导出SDK
 
 ## 5、测速
 
-### 5.1在Seeed Jetson Orin导出的onnxruntime文件进行测速测速
+### 5.1在Seeed Jetson Orin导出的onnxruntime文件进行测速
 ![](8.png)
 #### 5.1.1生成的日志文件如下：
     ========== onnxruntime-cuda ==========
@@ -238,14 +238,22 @@
     sshll_ins_sep throughput: 0.760621 ns 10.517725 GFlops latency: 2.129795 ns :
 
 可以看出模型测速耗时64ms，具有较快的速度
-### 5.2对模型进行可视化测试(显卡GTX1650)
-![](9.png)
-<video id="video" controls="" preload="none">
-    <source id="mp4" src="result.mp4" type="video/mp4">
-</video>
+### 5.2 对模型进行可视化测试
+- pth模型测试可视化结果：![pth文件测试结果可视化](data/test/fine_tuned/ap/output_pytorch.jpg)
+
+- onnxruntime模型测试可视化结果：![pth文件测试结果可视化](data/test/fine_tuned/ap/output_tensorrt.jpg)
+
+可见onnxruntime格式依然保持了较高的准确率，几乎没有精度损失。
 
 
 #### 实时检测，参考result.mp4
 
 #### 精度满足实时检测的需求，具有良好的跌倒检测效果。
+# 6 总结和评估
 
+本项目完成了目标检测调优与部署测试的整个流程，进行了功能测试和速度测试。测试结果显示，本项目模型达到了较高的精度，转换后的模型也达到了较快的推理速度（单张图片平均延迟为64毫秒）。
+
+
+# 7 致谢
+
+本项目受到[OpenMMLab](https://github.com/open-mmlab)和[Seeed](https://wiki.seeedstudio.com/)多位老师的指导，在此表示衷心感谢！感谢[北京超级云计算中心](https://cloud.blsc.cn/)平台提供的算力。
