@@ -1,7 +1,13 @@
-# 跌倒检测
+# 行人跌倒检测及jetson的部署
+## 0、项目介绍
+
+本项目选用轻量且高效的YOLOv7_tiny算法实现了对目标检测模型的微调，功能测试，以及在NVIDIA Jetson 平台上的部署和速度测试。实验表明：(1) 微调后的模型精度有明显提升，(2) [MMDeploy](https://github.com/open-mmlab/mmdeploy)转化后的tensorrt格式的目标检测模型几乎没有精度损失，且有较快的推理速度。
+
+- 项目任务详情： [点击](https://github.com/open-mmlab/OpenMMLabCamp/discussions/562)
+- Github 仓库链接： [点击](https://github.com/jiongjiongli/mmdet_jetson)
 
 ## 1、数据集分析
-
+本项目收集1440张行人跌倒图像，并将数据集按训练集：验证集=8:2的比例进行划分
 ### 1.1首先从Github下载mmyolo项目
     git clone https://github.com/open-mmlab/mmyolo.git
 
@@ -22,7 +28,6 @@
     ]
 
 
-​    
     max_epochs = 40
     train_batch_size_per_gpu = 12
     train_num_workers = 4
@@ -77,6 +82,7 @@
     python tools/analysis_tools/dataset_analysis.py configs/yolov7/yolov7_tiny_fall.py --out-dir work_dirs/dataset_analysis_cat/train_datasetataset --val-dataset
 
 ### 1.5优化anchor尺寸
+由于YOLOv7的anchor默认anchor尺寸是根据coco数据集得来的，本项目应根据本项目数据集计算anchor尺寸
 #### 1.5.1
     python tools/analysis_tools/optimize_anchors.py configs/yolov7/yolov7_tiny_fall  
             --algorithm v5-k-means  
@@ -93,7 +99,7 @@
 ## 2、训练数据
 ### 本项目选用的算法为yolov7_tiny轻量型网络，具有快速检测的能力。
     python tools/train.py configs/yolov7/yolov7_tiny_fall.py
-### 参数配置具体如下，训练结果基本收敛
+### 训练可视化具体如下，本项目训练100个epoch后，网络基本收敛
 ![](5.png)
 
 ## 3、验证
@@ -119,6 +125,7 @@
     
     nms=0.48时，map0.5=0.859
     nms=0.50时，map0.5=0.87
+当nms参数为0.5时，map0.5的指标最高，故调整nms的iou_threshold=0.50
 
 ## 4、导出模型
 ### 4.1#首先下载mmdeploy
@@ -126,9 +133,9 @@
 ### 4.2#进入mmdeploy-main文件
     cd mmyolo-main
 ### 4.3#导出onnxruntime模型
-    python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_onnxruntime_static.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_240.pth data/fall_7.jpg --dump-info
+    python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_onnxruntime_static.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_240.pth data/fall_7.jpg --dump-info#导出SDK
 ### 4.4#导出tensorrt模型
-    python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_tensorrt-int8_static-640x640.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_240.pth data/fall_7.jpg --dump-info
+    python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_tensorrt-int8_static-640x640.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_240.pth data/fall_7.jpg --dump-info#导出SDK
 
 ## 5、测速
 
@@ -230,6 +237,7 @@
     ldrd_sshll throughput: 0.456533 ns 17.523367 GFlops latency: 0.458355 ns :
     sshll_ins_sep throughput: 0.760621 ns 10.517725 GFlops latency: 2.129795 ns :
 
+可以看出模型测速耗时64ms，具有较快的速度
 ### 5.2对模型进行可视化测试(显卡GTX1650)
 ![](9.png)
 <video id="video" controls="" preload="none">
