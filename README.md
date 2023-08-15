@@ -1,7 +1,7 @@
 # 目标检测模型调优及在NVIDIA Jetson平台上的部署
 ## 0、项目介绍
 
-本项目选用轻量且高效的YOLOv7_tiny算法实现了对目标检测模型的微调，功能测试，以及在NVIDIA Jetson 平台上的部署和速度测试。实验表明：(1) 微调后的模型精度有明显提升，(2) [MMDeploy](https://github.com/open-mmlab/mmdeploy)转化后的onnxruntime格式的目标检测模型几乎没有精度损失，且有较快的推理速度。
+本项目选用轻量且高效的YOLOv7_tiny算法实现了对目标检测模型的微调，功能测试，以及在NVIDIA Jetson 平台上的部署和速度测试。实验表明：(1) 微调后的模型具有较高的精度，(2) [MMDeploy](https://github.com/open-mmlab/mmdeploy)转化后的onnxruntime格式的目标检测模型几乎没有精度损失，且有较快的推理速度。
 
 - 项目任务详情： [点击](https://github.com/open-mmlab/OpenMMLabCamp/discussions/583)
 - Github 仓库链接： [点击](https://github.com/daoqiugsy/mmdet_fall_jetson)
