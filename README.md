@@ -9,7 +9,7 @@
 ## 1、数据集分析
 本项目收集1440张行人跌倒图像，并将数据集按训练集：验证集=8:2的比例进行划分。 
 ### 1.1首先从Github下载mmyolo项目
-    git clone https://github.com/open-mmlab/mmyolo.git
+    git clone https://github.com/open-mmlab/mmyolo.git --recursive mmyolo-main
 
 ### 1.2将yolov7_tiny_fall.py 放configs同一目录下
 #### yolov7_tiny_fall.py 
@@ -129,17 +129,24 @@
 
 ## 4、导出模型
 ### 4.1 首先下载mmdeploy
-    git clone https://github.com/open-mmlab/mmdeploy.git
+    git clone https://github.com/open-mmlab/mmdeploy.git --recursive mmdeploy-main
+    #安装对应库
+    pip install -r requirements.txt
+    
 ### 4.2 进入mmdeploy-main文件
-    cd mmyolo-main
+    cd mmdeply-main
 ### 4.3 导出onnxruntime模型
-    python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_onnxruntime_static.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_240.pth data/fall_7.jpg --dump-info#导出SDK
+
+    python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_onnxruntime_static.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_40.pth data/fall_7.jpg --dump-info#导出SDK
 ### 4.4 导出tensorrt模型
     python tools/deploy.py H:\mmyolo-main\configs\deploy\detection_tensorrt-int8_static-640x640.py H:\mmyolo-main\configs\deploy\model\yolov7_s-static.py configs/yolov7/best_coco_bbox_mAP_epoch_240.pth data/fall_7.jpg --dump-info#导出SDK
 
 ## 5、测速
 
 ### 5.1在Seeed Jetson Orin导出的onnxruntime文件进行测速
+进入[模型测速页面](https://platform.openmmlab.com/deploee/task-profile-list)， 点击"模型测速"，点击“新建测速任务”。
+
+
 ![](8.png)
 #### 5.1.1生成的日志文件如下：
     ========== onnxruntime-cuda ==========
